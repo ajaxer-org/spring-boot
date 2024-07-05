@@ -1,2 +1,2 @@
-# spring-boot
-Wrapper pom for springboot projects
+> # Spring Boot Parent
+> Parent pom for springboot projects
