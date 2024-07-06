@@ -38,7 +38,7 @@ jobs:
     needs: build-publish #will wait for this job
     name: Git tag & release
     runs-on: ubuntu-latest
-    container: ershakiransari/jdk:8-mvn3
+    container: ershakiransari/jdk:17-mvn3
 
     steps:
 

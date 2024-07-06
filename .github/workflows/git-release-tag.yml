@@ -1,0 +1,56 @@
+name: Git release & tag
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Tag Version (add prefix v)
+        required: true
+      saveArtifact:
+        description: Attach artifacts?
+        type: boolean
+        required: true
+        default: true
+
+
+jobs:
+  tag-release:
+    name: Git release & tag
+    runs-on: ubuntu-latest
+    container: ershakiransari/jdk:17-mvn3
+
+    steps:
+
+      - name: Code checkout for ${{ github.event.inputs.version }}
+        uses: actions/checkout@v4.1.7
+
+      - name: Building artifact for ${{ github.event.inputs.version }}
+        run: mvn clean package --no-transfer-progress
+
+      # Creating A Release
+      - name: Creating Release ${{ github.event.inputs.version }}
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          # This token is provided by Actions, you do not need to create your own token
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          release_name: Version ${{ github.event.inputs.version }}
+          body: |
+            - Build Number: ${{ github.run_number }}
+            - Released on ${{ env.date_today }}
+          draft: false
+          prerelease: false
+
+      # Uploading Artifact to Release
+      - name: Upload Release Artifact ${{ github.event.inputs.version }}
+        if: "${{ github.event.inputs.saveArtifact == true }}"
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./pom.xml
+          asset_name: pom-${{ github.event.inputs.version }}.xml
+          asset_content_type: application/xml
